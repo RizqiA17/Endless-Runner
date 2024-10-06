@@ -23,11 +23,13 @@ public class GameManager : MonoBehaviour
     private void Update()
     {
         SpeedUp();
+        print(levelSpeed);
     }
 
     private void SpeedUp()
     {
-        levelSpeed = Utility.SmoothTransitionFloat(levelSpeed, levelSpeed + 1, speedUpSensivity * 0.001f);
+        if (levelSpeed < 19) levelSpeed = Utility.SmoothTransitionFloat(levelSpeed, levelSpeed + 1, speedUpSensivity * 0.001f);
+        else levelSpeed = 19;
     }
 
     public void LoadScene(int sceneIndex)

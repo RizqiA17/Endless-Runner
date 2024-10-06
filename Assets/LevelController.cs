@@ -26,6 +26,5 @@ public class LevelController : MonoBehaviour
     private void Move()
     {
         moveController.Move(new Vector3(-callClass.GameManager.levelSpeed, 0, 0));
-        print(callClass.GameManager.levelSpeed);
     }
 }

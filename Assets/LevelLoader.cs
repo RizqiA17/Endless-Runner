@@ -1,12 +1,16 @@
 using System.Collections;
 using System.Collections.Generic;
+using UnityEditor.Profiling;
 using UnityEngine;
+using UnityEngine.Playables;
 
 public class LevelLoader : MonoBehaviour
 {
     [SerializeField] private ClassCaller callClass;
     private GameObject[] level = null;
     private float delay;
+    private float frameRate;
+    private float deltaTime;
     public int totalLevelLenght;
 
     private void Awake()
@@ -24,7 +28,8 @@ public class LevelLoader : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-
+        deltaTime = Time.deltaTime;
+        frameRate = 1f / Time.smoothDeltaTime;
     }
 
     private void SetLevel()
@@ -51,16 +56,16 @@ public class LevelLoader : MonoBehaviour
     private void AddLevel(float position)
     {
         Instantiate(level[Random.Range(0, level.Length)], new Vector3(position, 0, 0), Quaternion.Euler(Vector3.zero));
-        delay = 0;
     }
 
     private void OnTriggerExit(Collider other)
     {
         if (other.CompareTag("Level"))
         {
-            delay += callClass.GameManager.levelSpeed / Time.deltaTime;
-            AddLevel(other.transform.position.x + 20 * totalLevelLenght - delay);
+            delay += callClass.GameManager.levelSpeed / frameRate;
+            AddLevel(other.transform.position.x + 20 * totalLevelLenght - callClass.GameManager.levelSpeed);
             Destroy(other.gameObject);
+            delay = 0;
         }
     }
 }

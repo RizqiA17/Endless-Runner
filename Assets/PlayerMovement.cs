@@ -8,6 +8,7 @@ public class PlayerMovement : MonoBehaviour
 {
     [Header("State")]
     [HideInInspector] public bool isRolling;
+    private bool isStart;
     private bool isGrounded;
     private bool isMove;
     private bool isMouseHidden;
@@ -17,6 +18,7 @@ public class PlayerMovement : MonoBehaviour
     private int pos = 1;
 
     [Header("Universal")]
+    private ClassCaller callClass;
     private CharacterController charController;
     private float normalHeight;
     private Vector3 velocity;
@@ -42,25 +44,25 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private Transform groundCheck;
     [SerializeField] private LayerMask groundLayer;
 
-    //[Header("Animation")]
-    //[SerializeField] private Animator animator;
-    //private string moveFloat = "move";
-    //private string animVelocityY = "velocityY";
-    //private string animJumpRun = "Run Jump";
-    //private string animJump = "Jumping";
-    //private string animGrounded = "isGrounded";
-    //private string animRolling = "Rolling";
-    //private string animIsRolling = "isRolling";
-    //private string animIdle = "Idle";
+    [Header("Animation")]
+    [SerializeField] private Animator animator;
+    private int start;
+    private int dead;
+    private int jump;
+    private int slide;
 
     // Start is called before the first frame update
     void Start()
     {
-        int i = 0;
+        callClass = GameObject.FindGameObjectWithTag("GameController").GetComponent<ClassCaller>();
         charController = GetComponent<CharacterController>();
         camTransform = GameObject.FindGameObjectWithTag("MainCamera").GetComponent<Transform>();
         normalHeight = charController.height;
         gravity = gravityForce;
+        start = Animator.StringToHash("Start");
+        dead = Animator.StringToHash("Dead");
+        jump = Animator.StringToHash("Jump");
+        slide = Animator.StringToHash("Slide");
     }
 
     // Update is called once per frame
@@ -74,6 +76,31 @@ public class PlayerMovement : MonoBehaviour
     // Script for Movement Character and Call Gravity Effect 
     private void Move()
     {
+        // Hide and Unhide Cursor
+        if (Input.GetKeyDown(KeyCode.M))
+        {
+            if (isMouseHidden)
+            {
+                Cursor.visible = false;
+                Cursor.lockState = CursorLockMode.Locked;
+                isMouseHidden = false;
+            }
+            else
+            {
+                Cursor.visible = true;
+                Cursor.lockState = CursorLockMode.None;
+                isMouseHidden = true;
+            }
+        }
+
+        if (!callClass.GameManager.isStart) return;
+
+        if (!isStart)
+        {
+            isStart = true;
+            animator.SetTrigger(start);
+        }
+
         // Input Movement
         bool leftInput = (Input.GetKeyDown(KeyCode.A) || Input.GetKeyDown(KeyCode.LeftArrow)) && pos != 0;
         bool rightInput = (Input.GetKeyDown(KeyCode.D) || Input.GetKeyDown(KeyCode.RightArrow)) && pos != 2;
@@ -103,33 +130,17 @@ public class PlayerMovement : MonoBehaviour
         //animator.SetFloat(animVelocityY, velocity.y);
         //animator.SetBool(animGrounded, CanSlide() || isGrounded);
         //animator.SetBool(animIsRolling, isRolling);
-
-        // Hide and Unhide Cursor
-        if (Input.GetKeyDown(KeyCode.M))
-        {
-            if (isMouseHidden)
-            {
-                Cursor.visible = false;
-                Cursor.lockState = CursorLockMode.Locked;
-                isMouseHidden = false;
-            }
-            else
-            {
-                Cursor.visible = true;
-                Cursor.lockState = CursorLockMode.None;
-                isMouseHidden = true;
-            }
-        }
-
     }
 
     public void Jump()
     {
         velocity.y = jumpForce;
+        animator.SetTrigger(jump);
     }
 
     private void Rolling()
     {
+        animator.SetTrigger(slide);
         isRolling = true;
 
         //animator.CrossFade(animRolling, .1f);

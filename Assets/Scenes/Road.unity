@@ -174,7 +174,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   callClass: {fileID: 1574078109}
-  totalLevelLenght: 10
+  totalLevelLenght: 50
 --- !u!4 &442613561
 Transform:
   m_ObjectHideFlags: 0
@@ -414,6 +414,18 @@ PrefabInstance:
     m_TransformParent: {fileID: 0}
     m_Modifications:
     - target: {fileID: 586650268448175535, guid: ab3c7d0aa1e602d4bbc03eb67846d7be, type: 3}
+      propertyPath: animator
+      value: 
+      objectReference: {fileID: 1526581621}
+    - target: {fileID: 586650268448175535, guid: ab3c7d0aa1e602d4bbc03eb67846d7be, type: 3}
+      propertyPath: callClass
+      value: 
+      objectReference: {fileID: 1574078109}
+    - target: {fileID: 586650268448175535, guid: ab3c7d0aa1e602d4bbc03eb67846d7be, type: 3}
+      propertyPath: camTransform
+      value: 
+      objectReference: {fileID: 1976184866}
+    - target: {fileID: 586650268448175535, guid: ab3c7d0aa1e602d4bbc03eb67846d7be, type: 3}
       propertyPath: path.Array.data[0]
       value: 
       objectReference: {fileID: 612486088}
@@ -489,6 +501,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b5ac187d725d2ef4aae456a9695e861d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!95 &1526581621 stripped
+Animator:
+  m_CorrespondingSourceObject: {fileID: 7874383135590591755, guid: ab3c7d0aa1e602d4bbc03eb67846d7be, type: 3}
+  m_PrefabInstance: {fileID: 810691548}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1574078106
 GameObject:
   m_ObjectHideFlags: 0
@@ -521,9 +538,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   callClass: {fileID: 0}
   movementSpeed: 0.1
-  speedUpSensivity: 0.1
+  speedUpSensivity: 0.0001
   levelSpeed: 0
-  isStart: 0
+  isStart: 1
 --- !u!4 &1574078108
 Transform:
   m_ObjectHideFlags: 0
