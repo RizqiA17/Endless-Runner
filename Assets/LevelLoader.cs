@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEditor.Profiling;
 using UnityEngine;
 using UnityEngine.Playables;
+using static UnityEditor.PlayerSettings;
 
 public class LevelLoader : MonoBehaviour
 {
@@ -16,6 +17,7 @@ public class LevelLoader : MonoBehaviour
     private void Awake()
     {
         InisiationLevel();
+        Instantiate(level[0], new Vector3(0, 0, 0), Quaternion.Euler(Vector3.zero));
         SetLevel();
     }
 
@@ -34,7 +36,7 @@ public class LevelLoader : MonoBehaviour
 
     private void SetLevel()
     {
-        int pos = 0;
+        int pos = 20;
         for (int i = 0; i < totalLevelLenght; i++)
         {
             Instantiate(level[Random.Range(0, level.Length - 1)], new Vector3(pos, 0, 0), Quaternion.Euler(Vector3.zero));

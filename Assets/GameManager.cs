@@ -1,13 +1,14 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 using Utilities;
 
 public class GameManager : MonoBehaviour
 {
     [SerializeField] private ClassCaller callClass;
+    [SerializeField] private GameObject gameOverCanvas;
     [SerializeField] private float movementSpeed;
+    [SerializeField] private float maxSpeed;
     [SerializeField] private float speedUpSensivity;
     [HideInInspector] public float levelSpeed;
     //[HideInInspector] 
@@ -23,17 +24,15 @@ public class GameManager : MonoBehaviour
     private void Update()
     {
         SpeedUp();
-        print(levelSpeed);
     }
 
     private void SpeedUp()
     {
-        if (levelSpeed < 19) levelSpeed = Utility.SmoothTransitionFloat(levelSpeed, levelSpeed + 1, speedUpSensivity * 0.001f);
-        else levelSpeed = 19;
+        if (levelSpeed < maxSpeed) levelSpeed = Utility.SmoothTransitionFloat(levelSpeed, levelSpeed + 1, speedUpSensivity * 0.001f);
+        else levelSpeed = maxSpeed;
     }
 
-    public void LoadScene(int sceneIndex)
-    {
-        SceneManager.LoadScene(sceneIndex);
+    public void GameOver() { 
+        gameOverCanvas.SetActive(true);
     }
 }

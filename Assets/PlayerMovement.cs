@@ -7,17 +7,19 @@ using Utilities;
 public class PlayerMovement : MonoBehaviour
 {
     [Header("State")]
-    [HideInInspector] public bool isRolling;
+    public bool isSliding;
+    public bool isJump;
+    private bool isDead;
     private bool isStart;
     private bool isGrounded;
     private bool isMove;
     private bool isMouseHidden;
     private bool isFall;
     private bool isChangeHeight;
-    private bool isSliding;
     private int pos = 1;
 
     [Header("Universal")]
+    [SerializeField] private float checkRadius;
     private ClassCaller callClass;
     private CharacterController charController;
     private float normalHeight;
@@ -34,13 +36,13 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private float newHeight;
     [SerializeField] private Transform camTransform;
     [SerializeField] private Transform[] path;
+    [SerializeField] private Transform obstacleGameOverChecker;
     private float currentVelocity;
     private float gravity;
     private float heightBefore;
 
     [Header("Gravity")]
     [SerializeField] private float gravityForce;
-    [SerializeField] private float checkRadius;
     [SerializeField] private Transform groundCheck;
     [SerializeField] private LayerMask groundLayer;
 
@@ -68,14 +70,6 @@ public class PlayerMovement : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        Move();
-
-        //if (isChangeHeight) ChangeHeight(charController.height, newHeight);
-    }
-
-    // Script for Movement Character and Call Gravity Effect 
-    private void Move()
-    {
         // Hide and Unhide Cursor
         if (Input.GetKeyDown(KeyCode.M))
         {
@@ -93,6 +87,14 @@ public class PlayerMovement : MonoBehaviour
             }
         }
 
+        if (!isDead) Move();
+
+        if (isChangeHeight) ChangeHeight(charController.height, newHeight);
+    }
+
+    // Script for Movement Character and Call Gravity Effect 
+    private void Move()
+    {
         if (!callClass.GameManager.isStart) return;
 
         if (!isStart)
@@ -105,7 +107,7 @@ public class PlayerMovement : MonoBehaviour
         bool leftInput = (Input.GetKeyDown(KeyCode.A) || Input.GetKeyDown(KeyCode.LeftArrow)) && pos != 0;
         bool rightInput = (Input.GetKeyDown(KeyCode.D) || Input.GetKeyDown(KeyCode.RightArrow)) && pos != 2;
         bool jumpInput = Input.GetKeyDown(KeyCode.Space) || Input.GetKeyDown(KeyCode.UpArrow) || Input.GetKeyDown(KeyCode.W);
-        bool roolInput = Input.GetKeyDown(KeyCode.LeftShift) || Input.GetKeyDown(KeyCode.S) || Input.GetKeyDown(KeyCode.DownArrow);
+        bool slideInput = Input.GetKeyDown(KeyCode.LeftShift) || Input.GetKeyDown(KeyCode.LeftControl) || Input.GetKeyDown(KeyCode.S) || Input.GetKeyDown(KeyCode.DownArrow);
 
         velocity = new Vector3(PlayerSpeed, velocity.y, 0);
 
@@ -114,8 +116,10 @@ public class PlayerMovement : MonoBehaviour
             Movement(velocity);
 
             if (jumpInput) Jump();
-            if (roolInput) Rolling();
+            if (slideInput) Sliding();
 
+            gravity = gravityForce;
+            //if (!isSliding) obstacleGameOverChecker.transform.localScale = new Vector3(1, normalHeight, 1);
         }
         else
         {
@@ -125,6 +129,15 @@ public class PlayerMovement : MonoBehaviour
         if (leftInput) pos--;
         else if (rightInput) pos++;
 
+        if (!isSliding && !isJump && IsGrounded()) animator.speed = callClass.GameManager.levelSpeed * 5;
+
+        if (isSliding && jumpInput) Jump();
+
+        if (isJump && !IsGrounded() && slideInput)
+        {
+            gravity *= 2;
+            Sliding();
+        }
         transform.position = new Vector3(transform.position.x, transform.position.y, Utility.SmoothTransitionFloat(transform.position.z, path[pos].position.z, 0.25f));
 
         //animator.SetFloat(animVelocityY, velocity.y);
@@ -134,25 +147,44 @@ public class PlayerMovement : MonoBehaviour
 
     public void Jump()
     {
-        velocity.y = jumpForce;
+        isJump = true;
+        if (isSliding) velocity.y = jumpForce * 1.4f;
+        else velocity.y = jumpForce;
+        animator.speed = 1;
+        charController.height = normalHeight;
+        isChangeHeight = false;
+        isSliding = false;
         animator.SetTrigger(jump);
     }
 
-    private void Rolling()
+    private void Sliding()
     {
+        gravity = gravityForce;
+        animator.speed = 1;
         animator.SetTrigger(slide);
-        isRolling = true;
+        isSliding = true;
 
         //animator.CrossFade(animRolling, .1f);
-        //heightBefore = normalHeight;
-        //newHeight = rollHeight;
+        heightBefore = normalHeight;
+        newHeight = rollHeight;
         isChangeHeight = true;
+
+        //obstacleGameOverChecker.transform.localScale = new Vector3(1, rollHeight, 1);
+    }
+
+    public void Dead()
+    {
+        isDead = true;
+        callClass.GameManager.levelSpeed = 0;
+        animator.speed = 1;
+        animator.SetTrigger(dead);
+        callClass.GameManager.GameOver();
     }
 
     public void DefaultHeight()
     {
         heightBefore = charController.height;
-        //newHeight = normalHeight;
+        newHeight = normalHeight;
         isChangeHeight = true;
     }
 
@@ -179,11 +211,6 @@ public class PlayerMovement : MonoBehaviour
         //velocity.y -= Time.deltaTime * gravityForce * 0.1f * smoothJump; // Membuat Effect Percepatan Smooth saat Lompat atau Terjatuh
         //Mathf.Lerp(velocity.y, velocity.y - gravity, Time.deltaTime);
         velocity.y = Utility.SmoothTransitionFloat(velocity.y, velocity.y - gravity);
-        if (!isSliding)
-        {
-            velocity.x = Utility.SmoothTransitionFloat(velocity.x, 0);
-            velocity.z = Utility.SmoothTransitionFloat(velocity.z, 0);
-        }
 
         //velocity = Mathf.Lerp(velocity, Vector3.zero, Time.deltaTime);
         Movement(GravityMovement(velocity));
@@ -200,6 +227,11 @@ public class PlayerMovement : MonoBehaviour
     private void Movement(Vector3 velocity)
     {
         charController.Move(new Vector3(velocity.x * PlayerSpeed, velocity.y, velocity.z * PlayerSpeed) * Time.deltaTime);
+    }
+
+    private bool GameOverChecker()
+    {
+        return Physics.CheckSphere(obstacleGameOverChecker.position, checkRadius, groundLayer);
     }
 
     private bool IsGrounded()
